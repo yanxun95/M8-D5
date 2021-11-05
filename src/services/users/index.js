@@ -26,6 +26,7 @@ userRouter.post("/login", async (req, res, next) => {
 
     // 2. Verify credentials
     const user = await UserModel.checkCredentials(email, password);
+    console.log('USER', user)
 
     if (user) {
       // 3. If credentials are ok we are going to generate access token and refresh token
