@@ -1,6 +1,9 @@
 import express from "express";
 import AccommodationModel from "./schema.js";
-import { JWTAuthMiddleware } from "../../auth/token.js";
+import { hostMiddleware, JWTAuthMiddleware } from "../../auth/token.js";
+import UserModel from "./schema.js";
+import mongoose from "mongoose";
+
 
 import createHttpError from "http-errors";
 
@@ -15,12 +18,17 @@ accommodationRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
   }
 });
 
-accommodationRouter.post("/", JWTAuthMiddleware, async (req, res, next) => {
+accommodationRouter.post("/", JWTAuthMiddleware,hostMiddleware, async (req, res, next) => {
   try {
-    const newAccommodation = new AccommodationModel(req.body);
-    const { _id } = await newAccommodation.save();
+    // const newAccommodation = new AccommodationModel({
+    //   ...req.body,
+    //   host: req.user._id,
+    // });
 
-    res.status(201).send({ _id });
+      const newAccommodation = new AccommodationModel(req.body);
+      const { _id } = await newAccommodation.save();
+      res.status(201).send({ _id });
+
   } catch (error) {
     next(error);
   }
@@ -52,7 +60,7 @@ accommodationRouter.put("/:id", JWTAuthMiddleware, async (req, res, next) => {
     );
 
     if (modifiedAccommodation) {
-      res.status(204).send(modifiedAccommodation);
+      res.send({modifiedAccommodation});
     } else {
       next(
         createHttpError(
@@ -75,7 +83,7 @@ accommodationRouter.delete(
       );
 
       if (deletedAccommodation) {
-        res.status(204).send();
+        res.send(`NO MORE ACCOMMODATION ID: ${req.params.id}`).status(204)
       } else {
         next(
           createHttpError(
